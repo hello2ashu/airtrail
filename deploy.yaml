@@ -1,0 +1,41 @@
+services:
+  db:
+    image: postgres:17
+    container_name: AirTrail-DB
+    hostname: airtrail-db
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ["CMD", "pg_isready", "-q", "-d", "airtrail", "-U", "airtrailuser"]
+      timeout: 45s
+      interval: 10s
+      retries: 10
+    volumes:
+      - /volume1/docker/airtraildb:/var/lib/postgresql/data:rw
+    environment:
+      POSTGRES_DB: airtrail
+      POSTGRES_USER: airtrailuser
+      POSTGRES_PASSWORD: airtrailpass
+    restart: on-failure:5
+
+  airtrail:
+    image: johly/airtrail:latest
+    container_name: AirTrail
+    healthcheck:
+      test: timeout 10s bash -c ':> /dev/tcp/127.0.0.1/3000' || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 90s
+    environment:
+      - ORIGIN=https://airtrail.ashish-syn-nas.synology.me
+      - DB_URL=postgres://airtrailuser:airtrailpass@airtrail-db:5432/airtrail
+      - DB_DATABASE_NAME=airtrail
+      - DB_USERNAME=airtrailuser
+      - DB_PASSWORD=airtrailpass
+    ports:
+      - 3857:3000
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: on-failure:5

@@ -32,7 +32,7 @@ services:
       - DB_URL=postgres://airtrailuser:airtrailpass@airtrail-db:5432/airtrail
       - DB_DATABASE_NAME=airtrail
       - DB_USERNAME=airtrailuser
-      - DB_PASSWORD=airtrailpass
+      - DB_PASSWORD=${sharedpgadminpass}
     ports:
       - 3857:3000
     depends_on:
